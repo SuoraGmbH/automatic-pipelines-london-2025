@@ -1,0 +1,23 @@
+name: PR Deploy Cleanup
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  buildAndDeploy:
+    name: Cleanup a PR preview deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get sluggified branch name
+        uses: rlespinasse/github-slug-action@v5
+      - name: Cleanup
+        shell: bash
+        run: |
+          echo "Cleaning up the preview deployment ${{ env.GITHUB_REF_SLUG_URL }}.preview.example.com"
+      - name: Announce deployment URL in PR
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          message: The preview deployment ${{ env.GITHUB_REF_SLUG_URL }}.preview.example.com has been cleaned up
+          comment-tag: preview-deployment

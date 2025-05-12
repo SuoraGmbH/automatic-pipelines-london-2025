@@ -1,0 +1,35 @@
+name: Preview Deploy
+
+on:
+  #push:
+  #  branches-ignore:
+  #    - main
+  workflow_dispatch:
+
+jobs:
+  buildAndDeploy:
+    name: Build and Deploy to preview
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Build
+        run: npm run build
+      - name: Get sluggified branch name
+        uses: rlespinasse/github-slug-action@v5
+      - name: Deploy
+        env:
+          SECRET: ${{ secrets.SECRET }}
+        shell: bash
+        run: |
+          echo "Deploying the application using the secret ${SECRET}"
+          echo "The hash of the secret:"
+          printf '%s' "${SECRET}" | md5sum
+          echo "Deploying to preview environment to ${{ env.GITHUB_REF_SLUG_URL }}.preview.example.com"

@@ -1,0 +1,39 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to deploy to
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+          - development
+
+jobs:
+  buildAndDeploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Build
+        run: npm run build
+      - name: Deploy
+        env:
+          SECRET: ${{ secrets.SECRET }}
+        shell: bash
+        run: |
+          echo "Deploying the application using the secret ${SECRET}"
+          echo "The hash of the secret:"
+          printf '%s' "${SECRET}" | md5sum
+          echo "Deploying to ${{ inputs.environment }}"
